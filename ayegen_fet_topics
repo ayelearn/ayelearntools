@@ -4,3 +4,4 @@ pushd $n
 url=$(wget ${wikibase}/w/index.php?search=$(basename `pwd` | tr '_' '+') -O res.html; cat  res.html | tr "\"" "\n" | egrep -i $(basename `pwd` | tr '_' '|') | grep ^https://en.wikipedia | grep /wiki/); echo The following text has been accessed from $url at $(date) > wiki.md; echo Creative_Commons_Attribution-ShareAlike_License >> wiki.md; curl $url | html2text >> wiki.md
 sleep 1
 popd
+done
