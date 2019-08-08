@@ -1,0 +1,35 @@
+#Under GNU GPL v2 license only
+
+#(C) Copyright 2019 Abhishek Choudhary, Dr Srija Katta
+
+tmpdir=tmp-$(date +%s)
+mkdir -p $tmpdir
+pushd $tmpdir
+wget ${sylbase}/syllabi.php -O gate2020syllabi.html
+for n in $(cat gate2020syllabi.html | tr '"' '\n' | grep pdf$)
+do
+    b=$(basename $n)
+    c=$(echo $b | rev | cut -c5- | rev)
+    mkdir -p $c
+    wget http://gate.iitd.ac.in$n -O $c/$b
+    pushd $c
+    pdftotext $b $c.txt
+
+    cat $c.txt | awk '/^Section/ {print ".\n\n"};/./ {print $0}' | sed 's/ /_/g; s/,_/,/g; s/_,/,/g; s/\._/\./g; s/_\./\./g; s/:_/:/g; s/_:/:/g; s/;_/;/g; s/_;/;/g; s/- /:/g; s/_(/(/g; s/(_/(/g; s/[^A-Za-z0-9,.:_%;()-/]*//g; s/:/:\n/g; s/,/,\n/g; s/;/;\n/g; s/\./\.\n/g; s/\\)\n/\\).\n/g' | tr -s '\n\r_' | awk 'BEGIN {sfhy=0;blk=0;};/[^,:.\;)]$/ {if (blk==0) {printf $0;sfhy=1;next}};/:$/ {printf $0; blk=1; next};/./ {if (sfhy == 1) {sfhy=0; printf "_"}; print $0; blk=0};END {if (sfhy == 1) print "."}' | awk 'BEGIN {ln=0};/^Section_/ {print "->"$0; next};/./ {if (ln<1) {ln=1; print $0; next} else print "+->"$0}' | awk 'BEGIN {sfhy=0};/[^,:.\;)]$/ {if (substr($1,1,1) ~ /\+/) {sfhy=1; printf $0} else {print $0}; next};/./ {if (sfhy!=1) print $0; else {print "_"substr($0,4); sfhy=0}};' > ${c}_tab1.txt
+
+    cat ${c}_tab1.txt | awk -F':' '/^[A-Z]/ {print $0; next}; /^->/ {print $0; next};/./ {if (NF==1) print $0; else {print $1 ":"; for (i=2; i<NF; i++) {print "+->" $i ":";} print "+->" $i}}' | awk '/^[A-Z]/ {print $0; next};/^->/ {print $0; next};/:$/ {print $0; next};/./ {print "+"$0}' | sed 's/[:.,;]$//g' > ${c}_tab2.txt
+
+    cat ${c}_tab2.txt | tr '\(\)\/' '___' | awk -F':' '/^[A-Z]/ {print "->" $2; next};/^->/ {print "->" $2; next};/./ {print $0}' > ${c}_tab3.txt 
+
+#    cat ${c}_tab3.txt | awk -F'+' '/./ {ollv=lv; lv=NF; if (lv<=ollv) for (i=lv; i<=ollv; i++) print "popd"; t=NF; $f=substr($t,3); print "#" $0; print "mkdir -p " $f "; pushd " $f "\necho " $f " > README.md"};END {for (i=1;i<=lv;i++) print "popd"}' > ${c}_create.sh
+
+     cat ${c}_tab3.txt |  awk -F'+' '{if (maxnf < NF) maxnf=NF; print "#"$0; for (i=NF+1;i<=maxnf;i++) print "depth" i "="; print "depth" NF "=" substr($NF,3); printf "pathname=."; for (i=1;i<=NF;i++) printf "/$depth" i; print ""; print "mkdir -p $pathname"; print "echo " substr($NF,3) " > $pathname/README.md"}' > ${c}_create.sh
+
+    chmod 777 ${c}_create.sh
+    ./${c}_create.sh 2> err.txt
+    popd
+done
+rm gate2020syllabi.html
+popd
+
+#url=$(wget ${wikibase}/w/index.php?search=$(basename `pwd` | tr '_' '+') -O res.html; cat  res.html | tr "\"" "\n" | egrep -i $(basename `pwd` | tr '_' '|') | grep ^https://en.wikipedia | grep /wiki/); echo The following text has been accessed from $url at $(date) > wiki.md; echo Creative_Commons_Attribution-ShareAlike_License >> wiki.md; curl $url | html2text >> wiki.md
