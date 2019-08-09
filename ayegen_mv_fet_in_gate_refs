@@ -1,0 +1,1 @@
+git clone https://github.com/ayelearn/fet; cd fet; mkdir -p refs/in-gate; for n in $(ls | grep ^[A-Z] | grep -v README.md | grep -v LICENSE); do git mv $n refs/in-gate/$n; done
