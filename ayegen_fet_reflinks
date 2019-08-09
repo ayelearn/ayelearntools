@@ -1,0 +1,9 @@
+#Under GNU GPL v2 only
+# (C) Copyright 2019 Abhishek Choudhary, Dr Srija Katta
+git clone https://github.com/ayelearn/fet
+cd fet
+mkdir -p ref-links/in-gate
+cd refs/in-gate
+
+#walk refs and link topics->ref-links
+for n in $(find . -type d); do ln -sf ../../topics/$(basename $n) ../../ref-links/in-gate/$n; done
