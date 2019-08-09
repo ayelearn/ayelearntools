@@ -1,0 +1,4 @@
+git clone https://github.com/ayelearn/fet
+cd fet
+cd refs
+strt=`pwd`/..; for n in $(find . -maxdepth 1); do pushd $n; topic=$(basename `pwd`); mkdir -p ${strt}/topics/${topic}; for m in $(find . -maxdepth 1 -type f); do cp $m ${strt}/topics/${topic}; done; popd; done
