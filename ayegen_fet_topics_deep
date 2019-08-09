@@ -1,3 +1,5 @@
+#Under GNU GPL v2 only
+# (C) Copyright 2019 Abhishek Choudhary, Dr Srija Katta
 git clone https://github.com/ayelearn/fet
 cd fet
 cd topics-squash
