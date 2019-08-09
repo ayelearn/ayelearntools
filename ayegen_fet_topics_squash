@@ -1,0 +1,5 @@
+git clone https://github.com/ayelearn/fet
+cd fet
+mkdir topics-squash
+cd topics-squash
+for n in $(find ../refs/in-gate/ -type d); do ln -s $n ./; done
